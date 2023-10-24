@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "Final Project"
 author: "Ikjoo Oh"
@@ -6,6 +7,28 @@ output: pdf_document
 ---
 
 
+## R Markdown
+
+```{r cars}
+summary(cars)asdfaSdASD
+```
+
+## Including Plots
+
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+=======
+---
+title: "Final Project"
+author: "Ikjoo Oh"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+a
 ## R Markdown
 
 ```{r cars}
@@ -19,3 +42,4 @@ summary(cars)
 plot(pressure)
 ```
 
+>>>>>>> 56baf66b47be75a3c8ddc079704d25015b96d0bd
