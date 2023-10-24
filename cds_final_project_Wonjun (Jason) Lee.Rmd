@@ -7,6 +7,9 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+# Load data
+wages_tidy <- read.csv("wages_tidy.csv")
 ```
 
 ## R Markdown
