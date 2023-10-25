@@ -63,3 +63,44 @@ wages_tidy %>%
   )
 ```
 
+```{r}
+wages_ethnicity <- wages_tidy %>% 
+  filter(grepl(c("black|hispanic|white"), demographic)) %>% 
+  separate(demographic, into = c("ethnicity", "demographic"), 
+           sep = "_", extra = "merge") %>% 
+  arrange(ethnicity, demographic, year)
+
+wages_ethnicity_inverse <- wages_tidy %>% 
+  filter(!grepl(c("black|hispanic|white"), demographic)) %>% 
+  mutate(ethnicity = NA) %>%
+  relocate(ethnicity, .after = year)
+
+wages_ethnicity_combined <- wages_ethnicity %>% 
+  bind_rows(wages_ethnicity_inverse) %>% 
+  arrange(ethnicity, demographic, year)
+```
+
+```{r}
+wages_gender <- wages_ethnicity_combined %>% 
+  filter(grepl(c("men|women"), demographic)) %>% 
+  separate(demographic, into = c("gender", "demographic"), 
+           sep = "_", extra = "merge") %>% 
+  arrange(ethnicity, gender, demographic, year)
+
+wages_gender_inverse <- wages_ethnicity_combined %>% 
+  filter(!grepl(c("men|women"), demographic)) %>% 
+  mutate(gender = NA) %>%
+  relocate(gender, .after = ethnicity)
+
+wages_gender_combined <- wages_gender %>% 
+  bind_rows(wages_gender_inverse) %>% 
+  arrange(ethnicity, gender, demographic, year)
+```
+
+```{r}
+wages_sep <- wages_gender_combined
+
+wages_sep %>% 
+  write.csv("wages_sep.csv", row.names=FALSE)
+```
+
