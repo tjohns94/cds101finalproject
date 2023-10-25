@@ -34,8 +34,12 @@ wbe_men2 %>%
   geom_line(
     mapping = aes(x = year, y = wages,
                   color = educational_level)
+  )+
+  labs(title="Average Wages of men by Educational Level Over the Years"
   )
 ```
+
+
 
 
 ```{r}
@@ -50,6 +54,8 @@ wbe_women2 %>%
   ggplot()+
   geom_line(
     mapping = aes(x = year, y = wages,
-                  color = educational_level)
+                  color = educational_level))+
+  labs(title="Average Wages of Women by Educational Level Over the Years"
   )
+  
 ```
