@@ -25,5 +25,7 @@ wages_tidy <- wages_by_education %>%
 ```{r}
 wages_tidy %>% 
   write.csv("wages_tidy.csv")
+
+tidyx <- read.csv("wages_tidy.csv")
 ```
 
