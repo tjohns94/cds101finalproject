@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ---
 title: "Final Project"
 author: "Ikjoo Oh"
@@ -5,17 +6,96 @@ date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
-a
-## R Markdown
+=======
+---
+title: "Final Project"
+author: "Ikjoo Oh"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
 
-```{r cars}
-summary(cars)
+```{r}
+wages_by_education <- read.csv("wages_by_education.csv")
+
+# Load packages
+suppressPackageStartupMessages(library(tidyverse))
 ```
 
-## Including Plots
 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+# Data of White people
+wbe_white <- wages_by_education %>%
+  select(year,white_less_than_hs:white_advanced_degree)
 ```
 
+```{r}
+# Data of Black people
+wbe_black <- wages_by_education %>%
+  select(year,black_less_than_hs:black_advanced_degree)
+```
+
+```{r}
+# Data of Hispanic People
+wbe_hispanic <- wages_by_education %>%
+  select(year,hispanic_less_than_hs:hispanic_advanced_degree)
+```
+
+```{r}
+# Black people divided in their level of education
+wbe_black_education <-wbe_black %>%
+pivot_longer(cols =2:black_advanced_degree, names_to = 'educational_level',
+             values_to = 'wages')
+```
+
+```{r}
+wbe_black_education %>%
+  ggplot()+
+  geom_line(mapping = aes(x = year, 
+                          y = wages,
+                          color = educational_level)
+
+)
+```
+
+
+
+
+```{r}
+# White people divided in their level of education
+wbe_white_education <-wbe_white %>%
+pivot_longer(cols =2:white_advanced_degree, names_to = 'educational_level',
+             values_to = 'wages')
+```
+
+
+
+```{r}
+wbe_white_education %>%
+  ggplot()+
+  geom_line(mapping = aes(x = year, 
+                          y = wages,
+                          color = educational_level)
+
+)
+```
+
+
+
+```{r}
+# Hispanic people divided in their level of education
+wbe_hispanic_education <-wbe_hispanic %>%
+pivot_longer(cols =2:hispanic_advanced_degree, names_to
+             ='educational_level',
+             values_to = 'wages')
+```
+
+```{r}
+wbe_hispanic_education %>%
+  ggplot()+
+  geom_line(mapping = aes(x = year, 
+                          y = wages,
+                          color = educational_level)
+
+)
+```
