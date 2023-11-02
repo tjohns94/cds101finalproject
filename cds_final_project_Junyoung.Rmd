@@ -1,11 +1,8 @@
 ---
 title: "CDS101 final project Junyoung Yu"
 author: "Junyoung Yu"
-date: "2023-10-30"
-output:
-  pdf_document: default
-  html_document:
-    df_print: paged
+date: "2023-10-24"
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -39,7 +36,3 @@ aggregated_overall_income %>%
     )
   )
 ```
-
-
-
-
