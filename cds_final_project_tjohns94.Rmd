@@ -7,24 +7,100 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+# Load libraries
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(infer))
+# Load data
+wages_by_education <- read.csv("wages_by_education.csv")
+wages_tidy <- read.csv("wages_tidy.csv")
 ```
 
-## R Markdown
+<!-- This chunk creates wages_tidy -->
+<!-- ```{r} -->
+<!-- wages_tidy <- wages_by_education %>%  -->
+<!--   pivot_longer( -->
+<!--     !year, -->
+<!--     names_to = "demographic", -->
+<!--     values_to = "wages" -->
+<!--   ) -->
+<!-- ``` -->
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+<!-- This chunk writes wages_tidy.csv -->
+<!-- ```{r} -->
+<!-- wages_tidy %>%  -->
+<!--   write.csv("wages_tidy.csv", row.names = FALSE) -->
+<!-- ``` -->
 
-```{r cars}
-summary(cars)
+## Summary Table
+
+```{r}
+wages_tidy %>% 
+  group_by(demographic) %>% 
+  summarize(
+    mean = mean(wages, na.rm=TRUE), 
+    median = median(wages, na.rm=TRUE),
+    min = min(wages, na.rm=TRUE), 
+    max = max(wages, na.rm=TRUE), 
+    sd = sd(wages, na.rm=TRUE), 
+    iqr = IQR(wages, na.rm=TRUE)
+  )
 ```
 
-## Including Plots
+\pagebreak
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+wages_tidy %>% 
+  filter(grepl("black", demographic)) %>% 
+  filter(!grepl("men", demographic)) %>% 
+  ggplot() + 
+  geom_line(
+    mapping = aes(
+      x = year,
+      y = wages,
+      color = demographic
+    )
+  )
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+wages_ethnicity <- wages_tidy %>% 
+  filter(grepl(c("black|hispanic|white"), demographic)) %>% 
+  separate(demographic, into = c("ethnicity", "demographic"), 
+           sep = "_", extra = "merge") %>% 
+  arrange(ethnicity, demographic, year)
+
+wages_ethnicity_inverse <- wages_tidy %>% 
+  filter(!grepl(c("black|hispanic|white"), demographic)) %>% 
+  mutate(ethnicity = NA) %>%
+  relocate(ethnicity, .after = year)
+
+wages_ethnicity_combined <- wages_ethnicity %>% 
+  bind_rows(wages_ethnicity_inverse) %>% 
+  arrange(ethnicity, demographic, year)
+```
+
+```{r}
+wages_gender <- wages_ethnicity_combined %>% 
+  filter(grepl(c("men|women"), demographic)) %>% 
+  separate(demographic, into = c("gender", "demographic"), 
+           sep = "_", extra = "merge") %>% 
+  arrange(ethnicity, gender, demographic, year)
+
+wages_gender_inverse <- wages_ethnicity_combined %>% 
+  filter(!grepl(c("men|women"), demographic)) %>% 
+  mutate(gender = NA) %>%
+  relocate(gender, .after = ethnicity)
+
+wages_gender_combined <- wages_gender %>% 
+  bind_rows(wages_gender_inverse) %>% 
+  arrange(ethnicity, gender, demographic, year)
+```
+
+```{r}
+wages_sep <- wages_gender_combined
+
+wages_sep %>% 
+  write.csv("wages_sep.csv", row.names=FALSE)
+```
+
