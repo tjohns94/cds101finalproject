@@ -13,6 +13,7 @@ suppressPackageStartupMessages(library(infer))
 # Load data
 wages_by_education <- read.csv("wages_by_education.csv")
 wages_tidy <- read.csv("wages_tidy.csv")
+wages_sep <- read.csv("wages_sep.csv")
 ```
 
 <!-- This chunk creates wages_tidy -->
@@ -50,57 +51,95 @@ wages_tidy %>%
 \pagebreak
 
 ```{r}
-wages_tidy %>% 
-  filter(grepl("black", demographic)) %>% 
-  filter(!grepl("men", demographic)) %>% 
-  ggplot() + 
-  geom_line(
-    mapping = aes(
-      x = year,
-      y = wages,
-      color = demographic
-    )
-  )
+wages_tidy %>%
+ filter(grepl("black", demographic)) %>%
+ filter(!grepl("men", demographic)) %>%
+ ggplot() +
+ geom_line(
+   mapping = aes(
+     x = year,
+     y = wages,
+     color = demographic
+   )
+ )
 ```
 
 ```{r}
-wages_ethnicity <- wages_tidy %>% 
-  filter(grepl(c("black|hispanic|white"), demographic)) %>% 
-  separate(demographic, into = c("ethnicity", "demographic"), 
-           sep = "_", extra = "merge") %>% 
-  arrange(ethnicity, demographic, year)
+wages_ethnicity <- wages_tidy %>%
+ filter(grepl(c("black|hispanic|white"), demographic)) %>%
+ separate(demographic, into = c("ethnicity", "demographic"),
+          sep = "_", extra = "merge") %>%
+ arrange(ethnicity, demographic, year)
 
-wages_ethnicity_inverse <- wages_tidy %>% 
-  filter(!grepl(c("black|hispanic|white"), demographic)) %>% 
-  mutate(ethnicity = NA) %>%
-  relocate(ethnicity, .after = year)
-
-wages_ethnicity_combined <- wages_ethnicity %>% 
-  bind_rows(wages_ethnicity_inverse) %>% 
-  arrange(ethnicity, demographic, year)
+wages_ethnicity_inverse <- wages_tidy %>%
+ filter(!grepl(c("black|hispanic|white"), demographic)) %>%
+ mutate(ethnicity = NA) %>%
+ relocate(ethnicity, .after = year)
+wages_ethnicity_combined <- wages_ethnicity %>%
+ bind_rows(wages_ethnicity_inverse) %>%
+ arrange(ethnicity, demographic, year)
 ```
 
 ```{r}
-wages_gender <- wages_ethnicity_combined %>% 
-  filter(grepl(c("men|women"), demographic)) %>% 
-  separate(demographic, into = c("gender", "demographic"), 
-           sep = "_", extra = "merge") %>% 
-  arrange(ethnicity, gender, demographic, year)
-
-wages_gender_inverse <- wages_ethnicity_combined %>% 
-  filter(!grepl(c("men|women"), demographic)) %>% 
-  mutate(gender = NA) %>%
-  relocate(gender, .after = ethnicity)
-
-wages_gender_combined <- wages_gender %>% 
-  bind_rows(wages_gender_inverse) %>% 
-  arrange(ethnicity, gender, demographic, year)
+wages_gender <- wages_ethnicity_combined %>%
+ filter(grepl(c("men|women"), demographic)) %>%
+ separate(demographic, into = c("gender", "demographic"),
+          sep = "_", extra = "merge") %>%
+ arrange(ethnicity, gender, demographic, year)
+wages_gender_inverse <- wages_ethnicity_combined %>%
+ filter(!grepl(c("men|women"), demographic)) %>%
+ mutate(gender = NA) %>%
+ relocate(gender, .after = ethnicity)
+wages_gender_combined <- wages_gender %>%
+ bind_rows(wages_gender_inverse) %>%
+ arrange(ethnicity, gender, demographic, year)
 ```
 
 ```{r}
 wages_sep <- wages_gender_combined
+wages_sep %>%
+ write.csv("wages_sep.csv", row.names=FALSE)
+```
 
-wages_sep %>% 
-  write.csv("wages_sep.csv", row.names=FALSE)
+```{r}
+wages_final <- wages_sep
+
+wages_final$demographic <- factor(wages_final$demographic, 
+                                levels = c("advanced_degree", 
+                                           "bachelors_degree", 
+                                           "some_college", 
+                                           "high_school", 
+                                           "less_than_hs"), 
+                                labels = c("Advanced Degree", 
+                                           "Bachelors Degree", 
+                                           "Some College", 
+                                           "High School", 
+                                           "Less than High School"), 
+                                ordered = TRUE)
+```
+
+```{r}
+na.exclude(wages_final) %>% 
+  ggplot() + 
+  geom_line(
+    mapping = aes(
+      x = year,
+      y = wages, 
+      color = demographic
+    )
+  ) + 
+  facet_wrap(
+    gender ~ ethnicity,
+    ncol = 3
+  ) + 
+  theme(
+    axis.text.x = element_text(angle = 30)
+  ) +
+  labs(
+    color = "Demographic"
+  ) + 
+  scale_color_manual(
+    values = c("red", "orange", "blue", "green", "purple")
+  )
 ```
 
