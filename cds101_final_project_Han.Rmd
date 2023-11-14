@@ -9,6 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 suppressPackageStartupMessages(library(tidyverse))
 wages_by_education <- read.csv("wages_by_education.csv")
+wages_sep <- read.csv("wages_sep.csv")
 ```
 
 ## 1
@@ -35,6 +36,17 @@ wbe_men2 %>%
     mapping = aes(x = year, y = wages,
                   color = educational_level)
   )+
+  scale_color_discrete(name = "Educational Level of Men",
+                       breaks =c("men_advanced_degree",
+                                "men_bachelors_degree",
+                                "men_some_college",
+                                "men_high_school",
+                                "men_less_than_hs"),
+                       labels = c("Advanced Degree",
+                                 "Bachelors Degree",
+                                 "Some College",
+                                 "High School",
+                                 "Lower than High School"))+
   labs(title="Average Wages of men by Educational Level Over the Years"
   )
 ```
@@ -55,7 +67,22 @@ wbe_women2 %>%
   geom_line(
     mapping = aes(x = year, y = wages,
                   color = educational_level))+
+  scale_color_discrete(name = "Educational Level of Women",
+                       breaks =c("women_advanced_degree",
+                                "women_bachelors_degree",
+                                "women_some_college",
+                                "women_high_school",
+                                "women_less_than_hs"),
+                       labels = c("Advanced Degree",
+                                 "Bachelors Degree",
+                                 "Some College",
+                                 "High School",
+                                 "Lower than High School"))+
   labs(title="Average Wages of Women by Educational Level Over the Years"
   )
   
 ```
+
+
+
+
