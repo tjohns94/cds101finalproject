@@ -53,9 +53,18 @@ wbe_black_education %>%
   ggplot()+
   geom_line(mapping = aes(x = year, 
                           y = wages,
-                          color = educational_level)
-
-)
+                          color = educational_level)) +
+  scale_color_discrete(name = "Educational Level of Black",
+                       breaks =c("black_advanced_degree",
+                                "black_bachelors_degree",
+                                "black_some_college",
+                                "black_high_school",
+                                "black_less_than_hs"),
+                       labels = c("Advanced Degree",
+                                 "Bachelors Degree",
+                                 "Some College",
+                                 "High School",
+                                 "Lower than High School"))
 ```
 
 
@@ -75,9 +84,21 @@ wbe_white_education %>%
   ggplot()+
   geom_line(mapping = aes(x = year, 
                           y = wages,
-                          color = educational_level)
+                          color = educational_level))+
+              scale_color_discrete(name = "Educational Level of White",
+                                   breaks =c("white_advanced_degree",
+                                             "white_bachelors_degree",
+                                             "white_some_college",
+                                             "white_high_school",
+                                             "white_less_than_hs"),
+                                   labels = c("Advanced Degree",
+                                              "Bachelors Degree",
+                                              "Some College",
+                                              "High School",
+                                              "Lower than High School"))
 
-)
+
+
 ```
 
 
@@ -95,7 +116,17 @@ wbe_hispanic_education %>%
   ggplot()+
   geom_line(mapping = aes(x = year, 
                           y = wages,
-                          color = educational_level)
+                          color = educational_level))+
+  scale_color_discrete(name = "Educational Level of Hispanic",
+                                   breaks =c("hispanic_advanced_degree",
+                                             "hispanic_bachelors_degree",
+                                             "hispanic_some_college",
+                                             "hispanic_high_school",
+                                             "hispanic_less_than_hs"),
+                                   labels = c("Advanced Degree",
+                                              "Bachelors Degree",
+                                              "Some College",
+                                              "High School",
+                                              "Lower than High School"))
 
-)
 ```
