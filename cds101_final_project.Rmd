@@ -1,35 +1,359 @@
 ---
 title: "Final Project"
-author: "Areum Han"
+author: "Group 1"
 date: "`r Sys.Date()`"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(infer))
+library(dplyr)
+wages_by_education <- read.csv("wages_by_education.csv")
+wages_tidy <- read.csv("wages_tidy.csv")
+wages_sep <- read.csv("wages_sep.csv")
+```
+<!-- This chunk creates wages_tidy -->
+<!-- ```{r} -->
+<!-- wages_tidy <- wages_by_education %>%  -->
+<!--   pivot_longer( -->
+<!--     !year, -->
+<!--     names_to = "demographic", -->
+<!--     values_to = "wages" -->
+<!--   ) -->
+<!-- ``` -->
+
+
+<!-- This chunk writes wages_tidy.csv -->
+<!-- ```{r} -->
+<!-- wages_tidy %>%  -->
+<!--   write.csv("wages_tidy.csv", row.names = FALSE) -->
+<!-- ``` -->
+
+
+
+
+
+##Junyoung
+
+```{r}
+overall_income <- read.csv("C:/wages_sep/wages_sep.csv") %>%
+  select(year, demographic, wages)
 ```
 
-## Research Question
-
-The value of the education trending positively or negatively
-
-H0: Degree value of 1993 = Degree value of 2022
-H1: Degree value of 1993 != Degree value of 2022
-
-
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r}
+aggregated_overall_income <- aggregate(wages ~ year + demographic, data = overall_income, FUN = mean)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+library(ggplot2)
+aggregated_overall_income %>%
+  ggplot() +
+  geom_line(
+    mapping = aes(
+      x = year,
+      y = wages,
+      color = demographic
+    )) + scale_color_discrete(name = "Educational Level", 
+                              breaks =c("advanced_degree",
+                                        "bachelors_degree",
+                                        "some_college",
+                                        "high_school",
+                                        "less_than_hs"),
+                              labels = c("Advanced Degree",
+                                         "Bachelors Degree",
+                                         "Some College",
+                                         "High School",
+                                         "Lower than High School"))
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Areum
+```{r}
+wbe_men <- wages_by_education %>%
+  select(year,men_less_than_hs:men_advanced_degree)
+```
+
+```{r}
+wbe_women <- wages_by_education %>%
+  select(year,women_less_than_hs:women_advanced_degree)
+```
+
+```{r}
+wbe_men2 <-wbe_men %>%
+  pivot_longer(cols =2:men_advanced_degree, names_to = 'educational_level', 
+               values_to = 'wages' )
+```
+
+```{r}
+wbe_men2 %>%
+  ggplot()+
+  geom_line(
+    mapping = aes(x = year, y = wages,
+                  color = educational_level)
+  )+
+  scale_color_discrete(name = "Educational Level of Men",
+                       breaks =c("men_advanced_degree",
+                                "men_bachelors_degree",
+                                "men_some_college",
+                                "men_high_school",
+                                "men_less_than_hs"),
+                       labels = c("Advanced Degree",
+                                 "Bachelors Degree",
+                                 "Some College",
+                                 "High School",
+                                 "Lower than High School"))+
+  labs(title="Average Wages of men by Educational Level Over the Years"
+  )
+```
+
+```{r}
+wbe_women2 <-wbe_women %>%
+  pivot_longer(cols =2:women_advanced_degree, names_to = 'educational_level', 
+               values_to = 'wages' )
+```
+
+
+```{r}
+wbe_women2 %>%
+  ggplot()+
+  geom_line(
+    mapping = aes(x = year, y = wages,
+                  color = educational_level))+
+  scale_color_discrete(name = "Educational Level of Women",
+                       breaks =c("women_advanced_degree",
+                                "women_bachelors_degree",
+                                "women_some_college",
+                                "women_high_school",
+                                "women_less_than_hs"),
+                       labels = c("Advanced Degree",
+                                 "Bachelors Degree",
+                                 "Some College",
+                                 "High School",
+                                 "Lower than High School"))+
+  labs(title="Average Wages of Women by Educational Level Over the Years"
+  )
+  
+```
+
+## Ikjoo
+
+```{r}
+# Data of White people
+wbe_white <- wages_by_education %>%
+  select(year,white_less_than_hs:white_advanced_degree)
+```
+
+```{r}
+# Data of Black people
+wbe_black <- wages_by_education %>%
+  select(year,black_less_than_hs:black_advanced_degree)
+```
+
+```{r}
+# Data of Hispanic People
+wbe_hispanic <- wages_by_education %>%
+  select(year,hispanic_less_than_hs:hispanic_advanced_degree)
+```
+
+```{r}
+# Black people divided in their level of education
+wbe_black_education <-wbe_black %>%
+pivot_longer(cols =2:black_advanced_degree, names_to = 'educational_level',
+             values_to = 'wages')
+```
+
+```{r}
+wbe_black_education %>%
+  ggplot()+
+  geom_line(mapping = aes(x = year, 
+                          y = wages,
+                          color = educational_level)) +
+  scale_color_discrete(name = "Educational Level of Black",
+                       breaks =c("black_advanced_degree",
+                                "black_bachelors_degree",
+                                "black_some_college",
+                                "black_high_school",
+                                "black_less_than_hs"),
+                       labels = c("Advanced Degree",
+                                 "Bachelors Degree",
+                                 "Some College",
+                                 "High School",
+                                 "Lower than High School"))
+```
+
+
+
+
+```{r}
+# White people divided in their level of education
+wbe_white_education <-wbe_white %>%
+pivot_longer(cols =2:white_advanced_degree, names_to = 'educational_level',
+             values_to = 'wages')
+```
+
+```{r}
+wbe_white_education %>%
+  ggplot()+
+  geom_line(mapping = aes(x = year, 
+                          y = wages,
+                          color = educational_level))+
+              scale_color_discrete(name = "Educational Level of White",
+                                   breaks =c("white_advanced_degree",
+                                             "white_bachelors_degree",
+                                             "white_some_college",
+                                             "white_high_school",
+                                             "white_less_than_hs"),
+                                   labels = c("Advanced Degree",
+                                              "Bachelors Degree",
+                                              "Some College",
+                                              "High School",
+                                              "Lower than High School"))
+
+
+```
+
+```{r}
+# Hispanic people divided in their level of education
+wbe_hispanic_education <-wbe_hispanic %>%
+pivot_longer(cols =2:hispanic_advanced_degree, names_to
+             ='educational_level',
+             values_to = 'wages')
+```
+
+```{r}
+wbe_hispanic_education %>%
+  ggplot()+
+  geom_line(mapping = aes(x = year, 
+                          y = wages,
+                          color = educational_level))+
+  scale_color_discrete(name = "Educational Level of Hispanic",
+                                   breaks =c("hispanic_advanced_degree",
+                                             "hispanic_bachelors_degree",
+                                             "hispanic_some_college",
+                                             "hispanic_high_school",
+                                             "hispanic_less_than_hs"),
+                                   labels = c("Advanced Degree",
+                                              "Bachelors Degree",
+                                              "Some College",
+                                              "High School",
+                                              "Lower than High School"))
+
+```
+
+## Tyson
+```{r}
+wages_tidy %>%
+ filter(grepl("black", demographic)) %>%
+ filter(!grepl("men", demographic)) %>%
+ ggplot() +
+ geom_line(
+   mapping = aes(
+     x = year,
+     y = wages,
+     color = demographic
+   )
+ )
+```
+
+```{r}
+wages_ethnicity <- wages_tidy %>%
+ filter(grepl(c("black|hispanic|white"), demographic)) %>%
+ separate(demographic, into = c("ethnicity", "demographic"),
+          sep = "_", extra = "merge") %>%
+ arrange(ethnicity, demographic, year)
+
+wages_ethnicity_inverse <- wages_tidy %>%
+ filter(!grepl(c("black|hispanic|white"), demographic)) %>%
+ mutate(ethnicity = NA) %>%
+ relocate(ethnicity, .after = year)
+wages_ethnicity_combined <- wages_ethnicity %>%
+ bind_rows(wages_ethnicity_inverse) %>%
+ arrange(ethnicity, demographic, year)
+```
+
+```{r}
+wages_gender <- wages_ethnicity_combined %>%
+ filter(grepl(c("men|women"), demographic)) %>%
+ separate(demographic, into = c("gender", "demographic"),
+          sep = "_", extra = "merge") %>%
+ arrange(ethnicity, gender, demographic, year)
+wages_gender_inverse <- wages_ethnicity_combined %>%
+ filter(!grepl(c("men|women"), demographic)) %>%
+ mutate(gender = NA) %>%
+ relocate(gender, .after = ethnicity)
+wages_gender_combined <- wages_gender %>%
+ bind_rows(wages_gender_inverse) %>%
+ arrange(ethnicity, gender, demographic, year)
+```
+
+```{r}
+wages_sep <- wages_gender_combined
+wages_sep %>%
+ write.csv("wages_sep.csv", row.names=FALSE)
+```
+
+```{r}
+wages_final <- wages_sep
+
+wages_final$demographic <- factor(wages_final$demographic, 
+                                levels = c("advanced_degree", 
+                                           "bachelors_degree", 
+                                           "some_college", 
+                                           "high_school", 
+                                           "less_than_hs"), 
+                                labels = c("Advanced Degree", 
+                                           "Bachelors Degree", 
+                                           "Some College", 
+                                           "High School", 
+                                           "Less than High School"), 
+                                ordered = TRUE)
+```
+
+```{r}
+na.exclude(wages_final) %>% 
+  ggplot() + 
+  geom_line(
+    mapping = aes(
+      x = year,
+      y = wages, 
+      color = demographic
+    )
+  ) + 
+  facet_wrap(
+    gender ~ ethnicity,
+    ncol = 3
+  ) + 
+  theme(
+    axis.text.x = element_text(angle = 30)
+  ) +
+  labs(
+    color = "Demographic"
+  ) + 
+  scale_color_manual(
+    values = c("red", "orange", "blue", "green", "purple")
+  )
+```
+
+
+
+
+
+
+
+## Summary Table
+
+```{r}
+wages_tidy %>% 
+  group_by(demographic) %>% 
+  summarize(
+    mean = mean(wages, na.rm=TRUE), 
+    median = median(wages, na.rm=TRUE),
+    min = min(wages, na.rm=TRUE), 
+    max = max(wages, na.rm=TRUE), 
+    sd = sd(wages, na.rm=TRUE), 
+    iqr = IQR(wages, na.rm=TRUE)
+  )
+```
+
+
