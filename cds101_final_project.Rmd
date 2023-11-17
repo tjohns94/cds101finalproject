@@ -11,34 +11,14 @@ suppressPackageStartupMessages(library(tidyverse))
 suppressPackageStartupMessages(library(infer))
 library(dplyr)
 wages_by_education <- read.csv("wages_by_education.csv")
-wages_tidy <- read.csv("wages_tidy.csv")
 wages_sep <- read.csv("wages_sep.csv")
+wages_tidy <- read.csv("wages_tidy.csv")
 ```
-<!-- This chunk creates wages_tidy -->
-<!-- ```{r} -->
-<!-- wages_tidy <- wages_by_education %>%  -->
-<!--   pivot_longer( -->
-<!--     !year, -->
-<!--     names_to = "demographic", -->
-<!--     values_to = "wages" -->
-<!--   ) -->
-<!-- ``` -->
-
-
-<!-- This chunk writes wages_tidy.csv -->
-<!-- ```{r} -->
-<!-- wages_tidy %>%  -->
-<!--   write.csv("wages_tidy.csv", row.names = FALSE) -->
-<!-- ``` -->
-
-
-
-
 
 ##Junyoung
 
 ```{r}
-overall_income <- read.csv("C:/wages_sep/wages_sep.csv") %>%
+overall_income <- read.csv("wages_sep.csv") %>%
   select(year, demographic, wages)
 ```
 
@@ -242,19 +222,7 @@ wbe_hispanic_education %>%
 ```
 
 ## Tyson
-```{r}
-wages_tidy %>%
- filter(grepl("black", demographic)) %>%
- filter(!grepl("men", demographic)) %>%
- ggplot() +
- geom_line(
-   mapping = aes(
-     x = year,
-     y = wages,
-     color = demographic
-   )
- )
-```
+
 
 ```{r}
 wages_ethnicity <- wages_tidy %>%
