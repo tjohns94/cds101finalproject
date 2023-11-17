@@ -33,6 +33,15 @@ aggregated_overall_income %>%
       x = year,
       y = wages,
       color = demographic
-    )
-  )
+    )) + scale_color_discrete(name = "Educational Level", 
+                              breaks =c("advanced_degree",
+                                        "bachelors_degree",
+                                        "some_college",
+                                        "high_school",
+                                        "less_than_hs"),
+                              labels = c("Advanced Degree",
+                                         "Bachelors Degree",
+                                         "Some College",
+                                         "High School",
+                                         "Lower than High School"))
 ```
