@@ -15,6 +15,8 @@ wages_by_education <- read.csv("wages_by_education.csv")
 wages_tidy <- read.csv("wages_tidy.csv")
 wages_sep <- read.csv("wages_sep.csv")
 tuition_fees <- read.csv("tuition_fees.csv")
+wages_extra <- read.csv("wages_extra.csv")
+extra_adj_sal <- read.csv("extra_adj_sal.csv")
 ```
 
 <!-- This chunk creates wages_tidy -->
@@ -702,10 +704,256 @@ wages_ad_fil %>%
   )
 ```
 
+### Extrapolating Coalescent Wages
+```{r}
+extra_df <- wages_by_education %>% select(
+  year:advanced_degree
+) %>% 
+  arrange(year) %>% 
+  bind_rows(
+    wages_extra
+  )
+```
+
+### Years of Salary Counted by Degree
+<!-- # ```{r} -->
+<!-- # degree_years_worked <-  -->
+<!-- #   c( -->
+<!-- #     "advanced_degree" = 10, -->
+<!-- #     "bachelors_degree" = 13,  -->
+<!-- #     "some_college" = 15,  -->
+<!-- #     "high_school" = 17,  -->
+<!-- #     "less_than_hs" = 17 -->
+<!-- #   ) -->
+<!-- # ``` -->
+
+### Merge Tuition Totals
+<!-- # ```{r} -->
+<!-- # tuition_totals <-  -->
+<!-- #   bind_rows( -->
+<!-- #     advanced_tuition_total,  -->
+<!-- #     bachelors_tuition_total,  -->
+<!-- #     some_college_tuition_total -->
+<!-- #   ) %>%  -->
+<!-- #   pivot_longer( -->
+<!-- #     advanced_degree:some_college,  -->
+<!-- #     names_to = "degree",  -->
+<!-- #     values_to = "tuition_total" -->
+<!-- #   ) %>%  -->
+<!-- #   filter( -->
+<!-- #     !is.na(tuition_total) -->
+<!-- #   ) -->
+<!-- # ``` -->
 
 
+### Adjusted Salaries Extrapolated
+<!-- # ```{r} -->
+<!-- # extra_longer <- extra_df %>%  -->
+<!-- #   pivot_longer( -->
+<!-- #     less_than_hs:advanced_degree,  -->
+<!-- #     names_to = "degree",  -->
+<!-- #     values_to = "wages" -->
+<!-- #   ) -->
+<!-- #  -->
+<!-- # extra_adj_sal <- extra_longer %>%  -->
+<!-- #   mutate( -->
+<!-- #     "adj_salary" = 0 -->
+<!-- #   ) %>%  -->
+<!-- #   arrange(factor(degree, levels = c("advanced_degree", "bachelors_degree", "some_college", "high_school", "less_than_hs"))) -->
+<!-- #  -->
+<!-- # for (m in 1:50) { -->
+<!-- #   for (n in 0:4) { -->
+<!-- #     for (o in 0:(degree_years_worked[[n+1]]-1)) { -->
+<!-- #       extra_adj_sal$adj_salary[m+68*n] = extra_adj_sal$adj_salary[m+68*n] + 2000 * extra_adj_sal$wages[m+68*n + o] -->
+<!-- #     } -->
+<!-- #     if (n < 3) { -->
+<!-- #       extra_adj_sal$adj_salary[m+68*n] = extra_adj_sal$adj_salary[m+68*n] - tuition_totals$tuition_total[m+n*50] -->
+<!-- #     } -->
+<!-- #   } -->
+<!-- # } -->
+<!-- # ``` -->
 
+<!-- # ```{r} -->
+<!-- # extra_adj_sal <- extra_adj_sal %>%  -->
+<!-- #   filter(year %in% 1973:2022) -->
+<!-- # ``` -->
 
+<!-- # ```{r} -->
+<!-- # write.csv(extra_adj_sal, "extra_adj_sal.csv", row.names = FALSE) -->
+<!-- # ``` -->
 
+### Plot
+```{r}
+extra_adj_sal %>% 
+  ggplot() + 
+  geom_line(
+    mapping = aes(
+      x = year, 
+      y = adj_salary, 
+      color = degree
+    )
+  )
+```
 
+```{r}
+sal_growth <- extra_adj_sal %>% 
+  mutate(growth_rate = 0)
 
+for (m in 2:50) {
+  for (n in 0:4) {
+    sal_growth$growth_rate[m+50*n] = (sal_growth$adj_salary[m+50*n] / sal_growth$adj_salary[m+50*n-1]) - 1
+  }
+}
+
+sal_growth <- sal_growth %>% 
+  select(c("degree", "growth_rate")) %>% 
+  filter(growth_rate != 0)
+```
+
+```{r}
+ad_vs_bd_df <- sal_growth %>% 
+  filter(degree %in% c("advanced_degree", "bachelors_degree"))
+
+ad_vs_bd_null <- ad_vs_bd_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "bachelors_degree"))
+
+ad_vs_bd_obs_stat <- ad_vs_bd_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "bachelors_degree"))
+
+ad_vs_bd_null %>% 
+  get_p_value(obs_stat = ad_vs_bd_obs_stat, direction = "right")
+
+ad_vs_bd_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = ad_vs_bd_obs_stat, direction = "right")
+```
+
+Advanced Degree and Bachelors Degree seem to be right on the edge of being statistically significant in difference of average growth rate.
+
+```{r}
+sc_vs_hs_df <- sal_growth %>% 
+  filter(degree %in% c("some_college", "high_school"))
+
+sc_vs_hs_null <- sc_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("some_college", "high_school"))
+
+sc_vs_hs_obs_stat <- sc_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("some_college", "high_school"))
+
+sc_vs_hs_null %>% 
+  get_p_value(obs_stat = sc_vs_hs_obs_stat, direction = "right")
+
+sc_vs_hs_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = sc_vs_hs_obs_stat, direction = "right")
+```
+
+The difference in average growth rate between "some college" and high school seems to be explained by randomness.
+
+```{r}
+ad_vs_hs_df <- sal_growth %>% 
+  filter(degree %in% c("advanced_degree", "high_school"))
+
+ad_vs_hs_null <- ad_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "high_school"))
+
+ad_vs_hs_obs_stat <- ad_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "high_school"))
+
+ad_vs_hs_null %>% 
+  get_p_value(obs_stat = ad_vs_hs_obs_stat, direction = "right")
+
+ad_vs_hs_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = ad_vs_hs_obs_stat, direction = "right")
+```
+
+It is very clear that advanced degree has a statistically significance in the difference of the mean growth rates compared to high school.
+
+```{r}
+ad_vs_sc_df <- sal_growth %>% 
+  filter(degree %in% c("advanced_degree", "some_college"))
+
+ad_vs_sc_null <- ad_vs_sc_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "some_college"))
+
+ad_vs_sc_obs_stat <- ad_vs_sc_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "some_college"))
+
+ad_vs_sc_null %>% 
+  get_p_value(obs_stat = ad_vs_sc_obs_stat, direction = "right")
+
+ad_vs_sc_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = ad_vs_sc_obs_stat, direction = "right")
+```
+
+Similarly, it is clear that the growth rate for advanced degree is significantly higher than the growth rate of "some college".
+
+```{r}
+bd_vs_sc_df <- sal_growth %>% 
+  filter(degree %in% c("bachelors_degree", "some_college"))
+
+bd_vs_sc_null <- bd_vs_sc_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("bachelors_degree", "some_college"))
+
+bd_vs_sc_obs_stat <- bd_vs_sc_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("bachelors_degree", "some_college"))
+
+bd_vs_sc_null %>% 
+  get_p_value(obs_stat = bd_vs_sc_obs_stat, direction = "right")
+
+bd_vs_sc_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = bd_vs_sc_obs_stat, direction = "right")
+```
+
+It is also clear that this trend remains between bachelors degree and "some college". The growth rate for bachelors degrees is clearly larger than for "some college".
+
+```{r}
+bd_vs_hs_df <- sal_growth %>% 
+  filter(degree %in% c("bachelors_degree", "high_school"))
+
+bd_vs_hs_null <- bd_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("bachelors_degree", "high_school"))
+
+bd_vs_hs_obs_stat <- bd_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("bachelors_degree", "high_school"))
+
+bd_vs_hs_null %>% 
+  get_p_value(obs_stat = bd_vs_hs_obs_stat, direction = "right")
+
+bd_vs_sc_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = bd_vs_hs_obs_stat, direction = "right")
+```
+
+Additionally, the growth rate for bachelors degrees is larger than that of high school.
+
+In conclusion, discarding "less than high school" due to it clearly performing worse than "high school", we find that the growth rates for both "advanced degree" and "bachelors degree" are significantly larger than the growth rates for "some college" or "high school". It is somewhat contentious on if an advanced degree has a significantly higher growth rate than a bachelors degree, with a p-value of just around 5%. The difference between "some college" and "high school" seems to be best explained by randomness.
+
+Due to earnings converted into ratios being calculated with a 10-year timespan of work for advanced degree holders and an increased number of years timespan for each other category due to entering the workforce earlier, it is likely that, with exceeding a 10-year window, the advanced degree would reach the required margin for being statistically significant in growth rate when compared to bachelors degrees. However, within the scope of our analysis, it would not technically qualify as significant.
