@@ -13,6 +13,74 @@ library(dplyr)
 wages_by_education <- read.csv("wages_by_education.csv")
 wages_sep <- read.csv("wages_sep.csv")
 wages_tidy <- read.csv("wages_tidy.csv")
+extra_adj_sal <- read.csv("extra_adj_sal.csv")
+```
+
+# Roles
+- Tyson: Data tidying, creating dataframes for modeling and analysis, collaborating on modeling and analysis, minor role in presentation
+- Junyoung: Data exploration for coalescent data, presentation and script
+- Ikjoo: Data exploration for data by ethnicity, organizing final rmd file, presentation and script
+- Wonjun (Jason): Organizing group collaboration efforts and meetings, collaborating on modeling, presentation and script
+- Areum: Data exploration for data by gender, collaborating on analysis, presentation and script
+
+## Tyson
+
+```{r}
+# Data Tidying
+# This code is separating rows in the wages_tidy data frame 
+# based on whether the "demographic" column contains
+# "black," "hispanic," or "white," creating a new column 
+# "ethnicity" in the process.
+wages_ethnicity <- wages_tidy %>%
+ filter(grepl(c("black|hispanic|white"), demographic)) %>%
+ separate(demographic, into = c("ethnicity", "demographic"),
+          sep = "_", extra = "merge") %>%
+ arrange(ethnicity, demographic, year)
+
+wages_ethnicity_inverse <- wages_tidy %>%
+ filter(!grepl(c("black|hispanic|white"), demographic)) %>%
+ mutate(ethnicity = NA) %>%
+ relocate(ethnicity, .after = year)
+wages_ethnicity_combined <- wages_ethnicity %>%
+ bind_rows(wages_ethnicity_inverse) %>%
+ arrange(ethnicity, demographic, year)
+```
+
+```{r}
+# Data Tidying
+# Similar process as creating the "ethnicity".
+# Created new row called "Gender" and combined with "wages_ethnicity_combined"  
+wages_gender <- wages_ethnicity_combined %>%
+ filter(grepl(c("men|women"), demographic)) %>%
+ separate(demographic, into = c("gender", "demographic"),
+          sep = "_", extra = "merge") %>%
+ arrange(ethnicity, gender, demographic, year)
+wages_gender_inverse <- wages_ethnicity_combined %>%
+ filter(!grepl(c("men|women"), demographic)) %>%
+ mutate(gender = NA) %>%
+ relocate(gender, .after = ethnicity)
+wages_gender_combined <- wages_gender %>%
+ bind_rows(wages_gender_inverse) %>%
+ arrange(ethnicity, gender, demographic, year)
+```
+
+```{r}
+# Data Tidying
+# Reordering the demographic for better visualization in the graph
+wages_final <- wages_sep
+
+wages_final$demographic <- factor(wages_final$demographic, 
+                                levels = c("advanced_degree", 
+                                           "bachelors_degree", 
+                                           "some_college", 
+                                           "high_school", 
+                                           "less_than_hs"), 
+                                labels = c("Advanced Degree", 
+                                           "Bachelors Degree", 
+                                           "Some College", 
+                                           "High School", 
+                                           "Less than High School"), 
+                                ordered = TRUE)
 ```
 
 ##Junyoung
@@ -237,98 +305,7 @@ wbe_hispanic_education %>%
 
 ```
 
-## Tyson
 
-
-```{r}
-# Data Tidying
-# This code is separating rows in the wages_tidy data frame 
-# based on whether the "demographic" column contains
-# "black," "hispanic," or "white," creating a new column 
-# "ethnicity" in the process.
-wages_ethnicity <- wages_tidy %>%
- filter(grepl(c("black|hispanic|white"), demographic)) %>%
- separate(demographic, into = c("ethnicity", "demographic"),
-          sep = "_", extra = "merge") %>%
- arrange(ethnicity, demographic, year)
-
-wages_ethnicity_inverse <- wages_tidy %>%
- filter(!grepl(c("black|hispanic|white"), demographic)) %>%
- mutate(ethnicity = NA) %>%
- relocate(ethnicity, .after = year)
-wages_ethnicity_combined <- wages_ethnicity %>%
- bind_rows(wages_ethnicity_inverse) %>%
- arrange(ethnicity, demographic, year)
-```
-
-```{r}
-# Data Tidying
-# Similar process as creating the "ethnicity".
-# Created new row called "Gender" and combined with "wages_ethnicity_combined"  
-wages_gender <- wages_ethnicity_combined %>%
- filter(grepl(c("men|women"), demographic)) %>%
- separate(demographic, into = c("gender", "demographic"),
-          sep = "_", extra = "merge") %>%
- arrange(ethnicity, gender, demographic, year)
-wages_gender_inverse <- wages_ethnicity_combined %>%
- filter(!grepl(c("men|women"), demographic)) %>%
- mutate(gender = NA) %>%
- relocate(gender, .after = ethnicity)
-wages_gender_combined <- wages_gender %>%
- bind_rows(wages_gender_inverse) %>%
- arrange(ethnicity, gender, demographic, year)
-```
-
-```{r}
-wages_sep <- wages_gender_combined
-wages_sep %>%
- write.csv("wages_sep.csv", row.names=FALSE)
-```
-
-```{r}
-# Data Tidying
-# Reordering the demographic for better visualization in the graph
-wages_final <- wages_sep
-
-wages_final$demographic <- factor(wages_final$demographic, 
-                                levels = c("advanced_degree", 
-                                           "bachelors_degree", 
-                                           "some_college", 
-                                           "high_school", 
-                                           "less_than_hs"), 
-                                labels = c("Advanced Degree", 
-                                           "Bachelors Degree", 
-                                           "Some College", 
-                                           "High School", 
-                                           "Less than High School"), 
-                                ordered = TRUE)
-```
-
-```{r}
-# Line plot of Wages overtime categorized by "gender" and "ethnicity"
-na.exclude(wages_final) %>% 
-  ggplot() + 
-  geom_line(
-    mapping = aes(
-      x = year,
-      y = wages, 
-      color = demographic
-    )
-  ) + 
-  facet_wrap(
-    gender ~ ethnicity,
-    ncol = 3
-  ) + 
-  theme(
-    axis.text.x = element_text(angle = 30)
-  ) +
-  labs(
-    color = "Demographic"
-  ) + 
-  scale_color_manual(
-    values = c("red", "orange", "blue", "green", "purple")
-  )
-```
 
 
 
@@ -369,8 +346,7 @@ wages_ad_fil %>%
   labs(
     x = "Year", 
     y = "Wages", 
-    title = "Advanced Degree Holder Wages, Coalescent", 
-    caption = "Intercept: -623.7246,\nSlope: 0.3326,\nCorrelation: 0.9664"
+    title = "Advanced Degree Holder Wages, Coalescent"
   )
 ```
 
@@ -403,8 +379,7 @@ wages_bd_fil %>%
   labs(
     x = "Year", 
     y = "Wages", 
-    title = "Bachelor's Degree Holder Wages, Coalescent", 
-    caption = "Intercept: -623.7246,\nSlope: 0.3326,\nCorrelation: 0.9664"
+    title = "Bachelor's Degree Holder Wages, Coalescent"
   )
 ```
 
@@ -437,8 +412,7 @@ wages_sc_fil %>%
   labs(
     x = "Year", 
     y = "Wages", 
-    title = "Some College Wages, Coalescent", 
-    caption = "Intercept: -623.7246,\nSlope: 0.3326,\nCorrelation: 0.9664"
+    title = "Some College Wages, Coalescent"
   )
 ```
 
@@ -474,8 +448,7 @@ wages_hs_fil %>%
   labs(
     x = "Year", 
     y = "Wages", 
-    title = "High School Degree Wages, Coalescent", 
-    caption = "Intercept: -623.7246,\nSlope: 0.3326,\nCorrelation: 0.9664"
+    title = "High School Degree Wages, Coalescent"
   )
 ```
 
@@ -510,8 +483,7 @@ wages_lhs_fil %>%
   labs(
     x = "Year", 
     y = "Wages", 
-    title = "Less than Highschool Wages, Coalescent", 
-    caption = "Intercept: -623.7246,\nSlope: 0.3326,\nCorrelation: 0.9664"
+    title = "Less than Highschool Wages, Coalescent"
   )
 ```
 
@@ -528,7 +500,7 @@ wages_extra$less_than_hs  <- predict(wages_lhs_lm, wages_extra)
 ```                                   
 
 
-
+## Collaboration between Tyson and Areum
 
 ```{r}
 sal_growth <- extra_adj_sal %>% 
@@ -754,29 +726,6 @@ bd_vs_sc_null %>%
     title = "Bachelor's Degree vs. High School 
     null distribution",
     x= "Difference in means of growth rates"
-  )
-```
-
-
-
-
-
-
-
-
-
-## Summary Table
-
-```{r}
-wages_tidy %>% 
-  group_by(demographic) %>% 
-  summarize(
-    mean = mean(wages, na.rm=TRUE), 
-    median = median(wages, na.rm=TRUE),
-    min = min(wages, na.rm=TRUE), 
-    max = max(wages, na.rm=TRUE), 
-    sd = sd(wages, na.rm=TRUE), 
-    iqr = IQR(wages, na.rm=TRUE)
   )
 ```
 
