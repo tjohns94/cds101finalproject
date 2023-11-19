@@ -18,15 +18,22 @@ wages_tidy <- read.csv("wages_tidy.csv")
 ##Junyoung
 
 ```{r}
+# Separated certain column(year, demographic, wages). 
+# Preprocessing step for the further analysis.
 overall_income <- read.csv("wages_sep.csv") %>%
   select(year, demographic, wages)
 ```
 
 ```{r}
-aggregated_overall_income <- aggregate(wages ~ year + demographic, data = overall_income, FUN = mean)
+# The mean overall wages by "year" and "demographic"  between 1973 ~ 2022.
+aggregated_overall_income <- aggregate(wages ~ year 
+                                       + demographic, 
+                                        data = overall_income, FUN = mean)
 ```
 
 ```{r}
+# Line plot based on data: "aggregated overall income".
+# Utilized scale_color_discrete function for better visualization
 library(ggplot2)
 aggregated_overall_income %>%
   ggplot() +
@@ -50,6 +57,7 @@ aggregated_overall_income %>%
 
 ## Areum
 ```{r}
+# Data of men
 wbe_men <- wages_by_education %>%
   select(year,men_less_than_hs:men_advanced_degree)
 ```
@@ -66,6 +74,8 @@ wbe_men2 <-wbe_men %>%
 ```
 
 ```{r}
+# Data Exploration
+# Wages of men overtime based on educational level
 wbe_men2 %>%
   ggplot()+
   geom_line(
@@ -95,6 +105,8 @@ wbe_women2 <-wbe_women %>%
 
 
 ```{r}
+# Data Exploration / Line plot
+# Wages of women overtime based on educational level
 wbe_women2 %>%
   ggplot()+
   geom_line(
@@ -144,6 +156,8 @@ pivot_longer(cols =2:black_advanced_degree, names_to = 'educational_level',
 ```
 
 ```{r}
+# Data Exploration / Line plot
+# Wages of Black People overtime based on educational level
 wbe_black_education %>%
   ggplot()+
   geom_line(mapping = aes(x = year, 
@@ -202,6 +216,8 @@ pivot_longer(cols =2:hispanic_advanced_degree, names_to
 ```
 
 ```{r}
+# Data Exploration / Line Plot
+# Wages of Hispanic overtime based on educational level
 wbe_hispanic_education %>%
   ggplot()+
   geom_line(mapping = aes(x = year, 
@@ -225,6 +241,11 @@ wbe_hispanic_education %>%
 
 
 ```{r}
+# Data Tidying
+# This code is separating rows in the wages_tidy data frame 
+# based on whether the "demographic" column contains
+# "black," "hispanic," or "white," creating a new column 
+# "ethnicity" in the process.
 wages_ethnicity <- wages_tidy %>%
  filter(grepl(c("black|hispanic|white"), demographic)) %>%
  separate(demographic, into = c("ethnicity", "demographic"),
@@ -241,6 +262,9 @@ wages_ethnicity_combined <- wages_ethnicity %>%
 ```
 
 ```{r}
+# Data Tidying
+# Similar process as creating the "ethnicity".
+# Created new row called "Gender" and combined with "wages_ethnicity_combined"  
 wages_gender <- wages_ethnicity_combined %>%
  filter(grepl(c("men|women"), demographic)) %>%
  separate(demographic, into = c("gender", "demographic"),
@@ -262,6 +286,8 @@ wages_sep %>%
 ```
 
 ```{r}
+# Data Tidying
+# Reordering the demographic for better visualization in the graph
 wages_final <- wages_sep
 
 wages_final$demographic <- factor(wages_final$demographic, 
@@ -279,6 +305,7 @@ wages_final$demographic <- factor(wages_final$demographic,
 ```
 
 ```{r}
+# Line plot of Wages overtime categorized by "gender" and "ethnicity"
 na.exclude(wages_final) %>% 
   ggplot() + 
   geom_line(
@@ -309,6 +336,9 @@ na.exclude(wages_final) %>%
 ## Wonjun (Jason) Lee
 
 ### Extrapolating Wages
+
+#### Created the scatter plot with regression line for each specific educational level. The gender and ethnicity has not been considered.
+
 ```{r}
 wages_ad_fil <- wages_sep %>% 
   filter(
@@ -486,6 +516,7 @@ wages_lhs_fil %>%
 ```
 
 ```{r}
+# The prediction of future wages based on educational level
 wages_extra <- data.frame(
 year=c(2023:2040)
 )
