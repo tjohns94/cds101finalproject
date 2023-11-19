@@ -15,7 +15,7 @@ wages_sep <- read.csv("wages_sep.csv")
 wages_tidy <- read.csv("wages_tidy.csv")
 ```
 
-##Junyoung
+## Junyoung
 
 ```{r}
 overall_income <- read.csv("wages_sep.csv") %>%
@@ -23,7 +23,8 @@ overall_income <- read.csv("wages_sep.csv") %>%
 ```
 
 ```{r}
-aggregated_overall_income <- aggregate(wages ~ year + demographic, data = overall_income, FUN = mean)
+aggregated_overall_income <- 
+  aggregate(wages ~ year + demographic, data = overall_income, FUN = mean)
 ```
 
 ```{r}
@@ -111,7 +112,8 @@ wbe_women2 %>%
                                  "Some College",
                                  "High School",
                                  "Lower than High School"))+
-  labs(title="Average Wages of Women by Educational Level Over the Years"
+  labs(title="Average Wages of Women by 
+       Educational Level Over the Years"
   )
   
 ```

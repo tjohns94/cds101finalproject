@@ -529,6 +529,207 @@ wages_extra$less_than_hs  <- predict(wages_lhs_lm, wages_extra)
 
 
 
+
+```{r}
+sal_growth <- extra_adj_sal %>% 
+  mutate(growth_rate = 0)
+for(m in 2:50) {
+  for(n in 0:4) {
+    sal_growth$growth_rate[m+50*n] = (sal_growth$adj_salary[m+50*n] / sal_growth$adj_salary[m+50*n-1]) - 1
+  }
+}
+```
+
+
+```{r}
+sal_growth <- sal_growth %>% 
+select(c("degree", "growth_rate")) %>% 
+filter(growth_rate != 0)
+```
+
+```{r}
+# Some College vs. High School
+set.seed(123)
+sc_vs_hs_df <- sal_growth %>% 
+  filter(degree %in% c("some_college", "high_school"))
+
+sc_vs_hs_null <- sc_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("some_college", "high_school"))
+
+sc_vs_hs_obs_stat <- sc_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("some_college", "high_school"))
+```
+
+```{r}
+sc_vs_hs_null %>% 
+  get_p_value(obs_stat = sc_vs_hs_obs_stat, direction = "right")
+```
+
+```{r}
+set.seed(123)
+sc_vs_hs_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = sc_vs_hs_obs_stat, direction = "right")+
+  labs(
+    title = "Some College vs. High School 
+    null distribution",
+    x= "Difference in means of growth rates"
+  )
+```
+
+
+```{r}
+# Advanced Degree vs. High School
+set.seed(124)
+ad_vs_hs_df <- sal_growth %>% 
+  filter(degree %in% c("advanced_degree", "high_school"))
+
+ad_vs_hs_null <- ad_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "high_school"))
+
+ad_vs_hs_obs_stat <- ad_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "high_school"))
+```
+
+```{r}
+ad_vs_hs_null %>% 
+  get_p_value(obs_stat = ad_vs_hs_obs_stat, direction = "right")
+```
+
+```{r}
+set.seed(124)
+ad_vs_hs_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = ad_vs_hs_obs_stat, direction = "right")+
+  labs(
+    title = "Advanced Degree vs. High School 
+    null distribution",
+    x= "Difference in means of growth rates"
+  )
+```
+
+
+```{r}
+# Advanced Degree vs. Some College
+set.seed(125)
+ad_vs_sc_df <- sal_growth %>% 
+  filter(degree %in% c("advanced_degree", "some_college"))
+
+ad_vs_sc_null <- ad_vs_sc_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "some_college"))
+
+ad_vs_sc_obs_stat <- ad_vs_sc_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "some_college"))
+```
+
+```{r}
+ad_vs_sc_null %>% 
+  get_p_value(obs_stat = ad_vs_sc_obs_stat, direction = "right")
+```
+
+```{r}
+set.seed(125)
+ad_vs_sc_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = ad_vs_sc_obs_stat, direction = "right")+
+  labs(
+    title = "Advanced Degree vs. Some College 
+    null distribution",
+    x= "Difference in means of growth rates"
+  )
+```
+
+
+
+```{r}
+# Bachelor's Degree vs. Some College
+set.seed(126)
+bd_vs_sc_df <- sal_growth %>% 
+  filter(degree %in% c("bachelors_degree", "some_college"))
+
+bd_vs_sc_null <- bd_vs_sc_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("bachelors_degree", "some_college"))
+
+bd_vs_sc_obs_stat <- bd_vs_sc_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("bachelors_degree", "some_college"))
+```
+
+```{r}
+bd_vs_sc_null %>% 
+  get_p_value(obs_stat = bd_vs_sc_obs_stat, direction = "right")
+```
+
+```{r}
+set.seed(126)
+bd_vs_sc_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = bd_vs_sc_obs_stat, direction = "right")+
+  labs(
+    title = "Bachelor's Degree vs. Some College 
+    null distribution",
+    x= "Difference in means of growth rates"
+  )
+```
+
+
+```{r}
+set.seed(127)
+# Bachelor's Degree vs. High School
+bd_vs_hs_df <- sal_growth %>% 
+  filter(degree %in% c("bachelors_degree", "high_school"))
+
+bd_vs_hs_null <- bd_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  hypothesize(null = "independence") %>% 
+  generate(reps = 10000, type = "permute") %>% 
+  calculate(stat = "diff in means", order = c("bachelors_degree", "high_school"))
+
+bd_vs_hs_obs_stat <- bd_vs_hs_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("bachelors_degree", "high_school"))
+```
+
+```{r}
+bd_vs_hs_null %>% 
+  get_p_value(obs_stat = bd_vs_hs_obs_stat, direction = "right")
+```
+
+```{r}
+set.seed(127)
+bd_vs_sc_null %>% 
+  visualize() + 
+  shade_p_value(obs_stat = bd_vs_hs_obs_stat, direction = "right")+
+  labs(
+    title = "Bachelor's Degree vs. High School 
+    null distribution",
+    x= "Difference in means of growth rates"
+  )
+```
+
+
+
+
+
+
+
+
+
 ## Summary Table
 
 ```{r}
