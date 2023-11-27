@@ -521,25 +521,33 @@ filter(growth_rate != 0)
 
 
 ```{r}
-set.seed(111)
+# set.seed(111)
 # Advanced Degree vs. Bacehlor's Degree
 ad_vs_bd_df <- sal_growth %>% 
   filter(degree %in% c("advanced_degree", "bachelors_degree"))
 
-ad_vs_bd_null <- ad_vs_bd_df %>% 
+ad_vs_bd_obs_stat <- ad_vs_bd_df %>% 
+  specify(growth_rate ~ degree) %>% 
+  calculate(stat = "diff in means", order = c("advanced_degree", "bachelors_degree"))
+
+p_sum_ad_bd = 0
+
+for (nreps in 1:100) {
+  ad_vs_bd_null <- ad_vs_bd_df %>% 
   specify(growth_rate ~ degree) %>% 
   hypothesize(null = "independence") %>% 
   generate(reps = 10000, type = "permute") %>% 
   calculate(stat = "diff in means", order = c("advanced_degree", "bachelors_degree"))
-
-ad_vs_bd_obs_stat <- ad_vs_bd_df %>% 
-  specify(growth_rate ~ degree) %>% 
-  calculate(stat = "diff in means", order = c("advanced_degree", "bachelors_degree"))
-```
-
-```{r}
-ad_vs_bd_null %>% 
+  
+  temp_p = ad_vs_bd_null %>% 
   get_p_value(obs_stat = ad_vs_bd_obs_stat, direction = "right")
+  
+  p_sum_ad_bd = p_sum_ad_bd + temp_p
+}
+
+p_value_ad_bd = p_sum_ad_bd / 100
+
+
 ```
 
 ```{r}
